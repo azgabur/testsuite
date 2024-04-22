@@ -2,7 +2,7 @@
 
 from dynaconf import Dynaconf, Validator
 
-from testsuite.config.tools import fetch_route, fetch_service, fetch_secret
+from testsuite.config.tools import fetch_route, fetch_service, fetch_secret, fetch_service_ip
 
 
 # pylint: disable=too-few-public-methods
@@ -52,9 +52,9 @@ settings = Dynaconf(
         Validator("control_plane.managedzone", must_exist=True, ne=None),
         Validator("control_plane.clusterissuer", must_exist=True, ne=None),
         Validator("letsencrypt.clusterissuer", must_exist=True, ne=None),
-        DefaultValueValidator("rhsso.url", default=fetch_route("no-ssl-sso")),
+        DefaultValueValidator("rhsso.url", default=fetch_service_ip("keycloak", force_http=True, port=8080)),
         DefaultValueValidator("rhsso.password", default=fetch_secret("credential-sso", "ADMIN_PASSWORD")),
-        DefaultValueValidator("mockserver.url", default=fetch_route("mockserver", force_http=True)),
+        DefaultValueValidator("mockserver.url", default=fetch_service_ip("mockserver", force_http=True, port=1080)),
     ],
     validate_only=["authorino", "kuadrant", "default_exposer", "control_plane"],
     loaders=["dynaconf.loaders.env_loader", "testsuite.config.openshift_loader", "testsuite.config.exposer"],

@@ -1,6 +1,7 @@
 """Service related objects"""
 
 from dataclasses import dataclass, asdict
+from typing import Literal
 
 from testsuite.openshift import OpenShiftObject
 
@@ -25,6 +26,7 @@ class Service(OpenShiftObject):
         selector: dict[str, str],
         ports: list[ServicePort],
         labels: dict[str, str] = None,
+        service_type: Literal["ClusterIP", "LoadBalancer", "NodePort", "ExternalName"] = None,
     ):
         """Creates new Service"""
         model: dict = {
@@ -34,11 +36,12 @@ class Service(OpenShiftObject):
                 "name": name,
                 "labels": labels,
             },
-            "spec": {
-                "ports": [asdict(port) for port in ports],
-                "selector": selector,
-            },
+            "spec": {"ports": [asdict(port) for port in ports], "selector": selector},
         }
+
+        if service_type is not None:
+            model["spec"]["type"] = service_type
+
         return cls(model, context=openshift.context)
 
     def get_port(self, name):
@@ -47,3 +50,9 @@ class Service(OpenShiftObject):
             if port["name"] == name:
                 return port
         raise KeyError(f"No port with name {name} exists")
+
+    @property
+    def external_ip(self):
+        if self.model.spec.type != "LoadBalancer":
+            raise AttributeError("External IP can be only used with LoadBalancer services")
+        return self.model.status.loadBalancer.ingress[0].ip
