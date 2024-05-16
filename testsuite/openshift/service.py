@@ -57,3 +57,9 @@ class Service(OpenShiftObject):
         if self.model.spec.type != "LoadBalancer":
             raise AttributeError("External IP can be only used with LoadBalancer services")
         return self.model.status.loadBalancer.ingress[0].ip
+
+    def delete(self, **kwargs):
+        """Deletes the resource and raises the timeout if type is LoadBalancer"""
+        if self.model.spec.type == "LoadBalancer":
+            return super().delete(timeout_sec=180, **kwargs)
+        return super().delete(**kwargs)

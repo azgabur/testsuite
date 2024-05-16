@@ -25,9 +25,9 @@ class OpenShiftObject(APIObject, LifecycleObject):
         self.committed = True
         return self.refresh()
 
-    def delete(self, ignore_not_found=True, cmd_args=None):
+    def delete(self, ignore_not_found=True, cmd_args=None, timeout_sec=30):
         """Deletes the resource, by default ignored not found"""
-        with timeout(30):
+        with timeout(timeout_sec):
             deleted = super().delete(ignore_not_found, cmd_args)
             self.committed = False
             return deleted
