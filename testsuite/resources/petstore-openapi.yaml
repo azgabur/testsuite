@@ -1,0 +1,75 @@
+openapi: "3.1.0"
+info:
+  title: "Pet Store API"
+  version: "1.0.0"
+  x-kuadrant:
+    route:
+      name: "petstore"
+      namespace: "petstore"
+      hostnames:
+        - example.com
+      parentRefs:
+        - name: istio-ingressgateway
+          namespace: istio-system
+servers:
+  - url: https://example.io/api/v1
+paths:
+  /cat:
+    x-kuadrant:
+      backendRefs:
+        - name: petstore
+          port: 80
+          namespace: petstore
+    get:  # No sec requirements
+      operationId: "getCat"
+      responses:
+        405:
+          description: "invalid input"
+    post:  # API key
+      operationId: "postCat"
+      security:
+        - cat_api_key: []
+      responses:
+        405:
+          description: "invalid input"
+  /dog:
+    x-kuadrant:
+      backendRefs:
+        - name: petstore
+          port: 80
+          namespace: petstore
+    get:  # OIDC
+      operationId: "getDog"
+      security:
+        - oidc:
+          - read:dogs
+      responses:
+        405:
+          description: "invalid input"
+  /snake:
+    x-kuadrant:
+      backendRefs:
+        - name: petstore
+          port: 80
+          namespace: petstore
+    get:  # OIDC or API key
+      operationId: "getSnake"
+      security:
+        - oidc: ["read:snakes"]
+        - snakes_api_key: []
+      responses:
+        405:
+          description: "invalid input"
+components:
+  securitySchemes:
+    cat_api_key:
+      type: apiKey
+      name: api_key
+      in: header
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: http://keycloak-sso.invalid
+    snakes_api_key:
+      type: apiKey
+      name: snake_token
+      in: query

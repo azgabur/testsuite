@@ -25,6 +25,7 @@
 #    collector_url: "rpc://jaeger-collector.com:4317"  # Tracing collector URL (may be internal)
 #    query_url: "http://jaeger-query.com"       # Tracing query URL
 #  cfssl: "cfssl"  # Path to the CFSSL library for TLS tests
+#  kuadrantctl: "kuadrantctl"  # Path to kuadrantctl utility to run kuadrantctl tests
 #  hyperfoil:
 #    url: "HYPERFOIL_URL"
 #    generate_reports: True                      # True, if each test should generate a report
