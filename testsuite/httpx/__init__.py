@@ -104,6 +104,9 @@ class ResultList(list):
                 f"{request} != {status_code}"
             )
 
+def _LOG_SUCCESS_TIME(details):
+    print(f"BACKOFF: {details["args"][1]} {details["args"][0].base_url}{details["args"][2]} took {details["elapsed"]}s")
+
 
 class KuadrantClient(Client):
     """Httpx client which retries unstable requests"""
@@ -146,7 +149,7 @@ class KuadrantClient(Client):
         self.retry_codes.add(code)
 
     # pylint: disable=too-many-locals
-    @backoff.on_predicate(backoff.fibo, lambda result: result.should_backoff(), max_tries=8, jitter=None)
+    @backoff.on_predicate(backoff.fibo, lambda result: result.should_backoff(), max_time=60*5, jitter=None, on_success=_LOG_SUCCESS_TIME, on_giveup=_LOG_SUCCESS_TIME)
     def request(
         self,
         method: str,
